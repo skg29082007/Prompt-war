@@ -3,13 +3,23 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: VenueFlow API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: zones
+    description: Venue zone occupancy
+  - name: queues
+    description: Virtual queue management
+  - name: alerts
+    description: Venue alerts
+  - name: analytics
+    description: Post-event analytics
+  - name: staff
+    description: Staff coordination
 paths:
   /healthz:
     get:
@@ -24,6 +34,290 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /zones:
+    get:
+      operationId: listZones
+      tags: [zones]
+      summary: List all venue zones with occupancy
+      responses:
+        "200":
+          description: List of zones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Zone"
+
+  /zones/{id}:
+    get:
+      operationId: getZone
+      tags: [zones]
+      summary: Get zone by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Zone detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Zone"
+    patch:
+      operationId: updateZoneOccupancy
+      tags: [zones]
+      summary: Update zone occupancy count
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateZoneOccupancyBody"
+      responses:
+        "200":
+          description: Updated zone
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Zone"
+
+  /zones/summary:
+    get:
+      operationId: getZonesSummary
+      tags: [zones]
+      summary: Get venue-wide occupancy summary
+      responses:
+        "200":
+          description: Venue summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VenueSummary"
+
+  /queues:
+    get:
+      operationId: listQueues
+      tags: [queues]
+      summary: List all queues
+      responses:
+        "200":
+          description: List of queues
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Queue"
+
+  /queues/{id}/join:
+    post:
+      operationId: joinQueue
+      tags: [queues]
+      summary: Join a virtual queue
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JoinQueueBody"
+      responses:
+        "201":
+          description: Queue entry created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueueEntry"
+
+  /queues/{id}/entries:
+    get:
+      operationId: listQueueEntries
+      tags: [queues]
+      summary: List entries in a queue
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of queue entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QueueEntry"
+
+  /queues/entries/{entryId}:
+    delete:
+      operationId: leaveQueue
+      tags: [queues]
+      summary: Leave / remove a queue entry
+      parameters:
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Queue entry removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueueEntry"
+
+  /alerts:
+    get:
+      operationId: listAlerts
+      tags: [alerts]
+      summary: List active venue alerts
+      parameters:
+        - name: resolved
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+    post:
+      operationId: createAlert
+      tags: [alerts]
+      summary: Create a new alert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAlertBody"
+      responses:
+        "201":
+          description: Created alert
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+
+  /alerts/{id}/resolve:
+    patch:
+      operationId: resolveAlert
+      tags: [alerts]
+      summary: Mark alert as resolved
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Resolved alert
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+
+  /analytics/peak-times:
+    get:
+      operationId: getPeakTimes
+      tags: [analytics]
+      summary: Get peak crowd times data
+      responses:
+        "200":
+          description: Peak times data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PeakTimePoint"
+
+  /analytics/wait-times:
+    get:
+      operationId: getAvgWaitTimes
+      tags: [analytics]
+      summary: Get average wait times per zone
+      responses:
+        "200":
+          description: Average wait times
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ZoneWaitTime"
+
+  /analytics/incidents:
+    get:
+      operationId: listIncidents
+      tags: [analytics]
+      summary: List all incidents for export
+      responses:
+        "200":
+          description: Incident log
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Incident"
+
+  /staff/messages:
+    get:
+      operationId: listStaffMessages
+      tags: [staff]
+      summary: List staff coordination messages
+      responses:
+        "200":
+          description: Staff messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StaffMessage"
+    post:
+      operationId: createStaffMessage
+      tags: [staff]
+      summary: Post a staff coordination message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStaffMessageBody"
+      responses:
+        "201":
+          description: Created message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffMessage"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +328,314 @@ components:
       required:
         - status
 
+    Zone:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [gate, concourse, food_court, restroom, seating]
+        capacity:
+          type: integer
+        currentCount:
+          type: integer
+        occupancyPercent:
+          type: number
+        waitTimeMinutes:
+          type: number
+        status:
+          type: string
+          enum: [normal, busy, critical]
+        x:
+          type: number
+          description: Heatmap X position (0-100)
+        y:
+          type: number
+          description: Heatmap Y position (0-100)
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - type
+        - capacity
+        - currentCount
+        - occupancyPercent
+        - waitTimeMinutes
+        - status
+        - x
+        - y
+        - updatedAt
+
+    UpdateZoneOccupancyBody:
+      type: object
+      properties:
+        currentCount:
+          type: integer
+          minimum: 0
+      required:
+        - currentCount
+
+    VenueSummary:
+      type: object
+      properties:
+        totalCapacity:
+          type: integer
+        totalAttendees:
+          type: integer
+        overallOccupancyPercent:
+          type: number
+        criticalZones:
+          type: integer
+        busyZones:
+          type: integer
+        normalZones:
+          type: integer
+        activeAlerts:
+          type: integer
+        avgWaitTimeMinutes:
+          type: number
+      required:
+        - totalCapacity
+        - totalAttendees
+        - overallOccupancyPercent
+        - criticalZones
+        - busyZones
+        - normalZones
+        - activeAlerts
+        - avgWaitTimeMinutes
+
+    Queue:
+      type: object
+      properties:
+        id:
+          type: integer
+        zoneId:
+          type: integer
+        zoneName:
+          type: string
+        queueLength:
+          type: integer
+        avgServiceTimeMinutes:
+          type: number
+        activeServers:
+          type: integer
+        estimatedWaitMinutes:
+          type: number
+        isOpen:
+          type: boolean
+      required:
+        - id
+        - zoneId
+        - zoneName
+        - queueLength
+        - avgServiceTimeMinutes
+        - activeServers
+        - estimatedWaitMinutes
+        - isOpen
+
+    JoinQueueBody:
+      type: object
+      properties:
+        attendeeName:
+          type: string
+        attendeeContact:
+          type: string
+      required:
+        - attendeeName
+
+    QueueEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        queueId:
+          type: integer
+        attendeeName:
+          type: string
+        attendeeContact:
+          type: string
+        position:
+          type: integer
+        estimatedWaitMinutes:
+          type: number
+        status:
+          type: string
+          enum: [waiting, called, served, left]
+        joinedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - queueId
+        - attendeeName
+        - position
+        - estimatedWaitMinutes
+        - status
+        - joinedAt
+
+    Alert:
+      type: object
+      properties:
+        id:
+          type: integer
+        zoneId:
+          type: integer
+        zoneName:
+          type: string
+        type:
+          type: string
+          enum: [overcrowding, long_wait, gate_closed, rebalance_suggested, general]
+        message:
+          type: string
+        severity:
+          type: string
+          enum: [info, warning, critical]
+        resolved:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        resolvedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - zoneId
+        - zoneName
+        - type
+        - message
+        - severity
+        - resolved
+        - createdAt
+
+    CreateAlertBody:
+      type: object
+      properties:
+        zoneId:
+          type: integer
+        type:
+          type: string
+          enum: [overcrowding, long_wait, gate_closed, rebalance_suggested, general]
+        message:
+          type: string
+        severity:
+          type: string
+          enum: [info, warning, critical]
+      required:
+        - zoneId
+        - type
+        - message
+        - severity
+
+    PeakTimePoint:
+      type: object
+      properties:
+        hour:
+          type: string
+        attendees:
+          type: integer
+        label:
+          type: string
+      required:
+        - hour
+        - attendees
+        - label
+
+    ZoneWaitTime:
+      type: object
+      properties:
+        zoneName:
+          type: string
+        zoneType:
+          type: string
+        avgWaitMinutes:
+          type: number
+        peakWaitMinutes:
+          type: number
+      required:
+        - zoneName
+        - zoneType
+        - avgWaitMinutes
+        - peakWaitMinutes
+
+    Incident:
+      type: object
+      properties:
+        id:
+          type: integer
+        alertId:
+          type: integer
+        zoneName:
+          type: string
+        type:
+          type: string
+        description:
+          type: string
+        severity:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+        resolvedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - alertId
+        - zoneName
+        - type
+        - description
+        - severity
+        - occurredAt
+
+    StaffMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        author:
+          type: string
+        role:
+          type: string
+          enum: [supervisor, security, concessions, medical, operations]
+        message:
+          type: string
+        zoneId:
+          type: integer
+          nullable: true
+        zoneName:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - author
+        - role
+        - message
+        - createdAt
+
+    CreateStaffMessageBody:
+      type: object
+      properties:
+        author:
+          type: string
+        role:
+          type: string
+          enum: [supervisor, security, concessions, medical, operations]
+        message:
+          type: string
+        zoneId:
+          type: integer
+      required:
+        - author
+        - role
+        - message

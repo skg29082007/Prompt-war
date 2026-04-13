@@ -1,0 +1,122 @@
+Build a full-stack web application called "VenueFlow" — a real-time physical event experience management system for large-scale sporting venues.
+
+## PROJECT GOAL
+Improve the physical event experience for attendees by addressing:
+- Crowd movement & congestion
+- Waiting times at entrances, concessions, restrooms
+- Real-time coordination between staff and attendees
+- Seamless, enjoyable experience from entry to exit
+
+---
+
+## TECH STACK
+- Frontend: React + Tailwind CSS (responsive, mobile-first)
+- Backend: Node.js + Express REST API
+- Database: Firebase Firestore (Google Service — real-time sync)
+- Maps: Google Maps JavaScript API (crowd heatmap overlay)
+- Auth: Firebase Authentication (Google Sign-In)
+- Notifications: Firebase Cloud Messaging (FCM)
+- Deployment: Replit (single project, live preview URL)
+
+---
+
+## FEATURES TO BUILD
+
+### 1. Live Venue Dashboard (Staff View)
+- Real-time occupancy % per zone (Gate A/B/C, Concourse 1-4, Food Court, Restrooms)
+- Color-coded crowd heatmap using Google Maps API overlaid on venue floor plan SVG
+- Alert system: auto-flag zones above 80% capacity
+- Staff chat / coordination panel (Firebase Realtime)
+
+### 2. Attendee Mobile Web App
+- QR code entry scan simulation (camera access via browser)
+- Personalized navigation: "Shortest path to your seat" using Google Maps Directions API
+- Live wait-time display for concessions & restrooms (updated every 30s)
+- Push notifications via FCM: "Gate B now open — shorter queue"
+- Accessibility mode: high contrast, large text, wheelchair-friendly route toggle
+
+### 3. Smart Queue Management
+- Virtual queue system: attendees join queue digitally, get SMS/push alert when their turn approaches
+- Estimated wait time algorithm: queue_length * avg_service_time / active_servers
+- Auto-rebalance suggestion: "Move 30% of Gate A traffic to Gate C" when imbalance detected
+
+### 4. Post-Event Analytics (Google Looker Studio embed or Chart.js)
+- Peak crowd times chart
+- Average wait times per zone
+- Incident/alert log export
+
+---
+
+## CODE QUALITY REQUIREMENTS
+- Use ESLint + Prettier config files (.eslintrc, .prettierrc)
+- Modular folder structure: /client, /server, /shared
+- Environment variables in .env (never hardcode API keys)
+- Input validation on all API endpoints (use express-validator)
+- Error boundaries in React components
+- JSDoc comments on all functions
+
+## SECURITY REQUIREMENTS
+- Firebase security rules: users can only read/write their own queue entries
+- Helmet.js on Express for HTTP headers
+- Rate limiting on API routes (express-rate-limit)
+- Sanitize all user inputs (xss-clean middleware)
+- HTTPS enforced (Replit handles this automatically)
+
+## EFFICIENCY REQUIREMENTS
+- Debounce real-time listener updates (300ms)
+- Lazy-load dashboard chart components
+- Memoize expensive React renders with useMemo / useCallback
+- Paginate API responses (max 50 records per call)
+
+## TESTING REQUIREMENTS
+- Jest unit tests for queue algorithm logic (/tests/queue.test.js)
+- React Testing Library for at least 2 UI components
+- Supertest for 3 API endpoint integration tests
+- Test coverage report: npm run test -- --coverage
+
+## ACCESSIBILITY REQUIREMENTS
+- All images have alt text
+- ARIA labels on interactive elements
+- Keyboard navigable UI (tab order, focus rings)
+- Color contrast ratio >= 4.5:1 (WCAG AA)
+- Screen reader tested with axe-core (add as dev dependency)
+
+## GOOGLE SERVICES INTEGRATION
+- Firebase Auth (Google Sign-In)
+- Firebase Firestore (occupancy + queue data)
+- Firebase Cloud Messaging (push alerts)
+- Google Maps JavaScript API (heatmap + directions)
+
+---
+
+## FILE STRUCTURE TO GENERATE
+venueflow/
+├── client/
+│   ├── src/
+│   │   ├── components/ (Dashboard, QueueCard, MapView, NotifBell)
+│   │   ├── pages/ (Home, StaffDashboard, AttendeeView)
+│   │   ├── hooks/ (useOccupancy, useQueue, useNotifications)
+│   │   └── utils/ (queueAlgo.js, formatters.js)
+├── server/
+│   ├── routes/ (queue.js, occupancy.js, alerts.js)
+│   ├── middleware/ (auth.js, rateLimiter.js, validate.js)
+│   └── index.js
+├── tests/
+│   ├── queue.test.js
+│   ├── api.test.js
+│   └── components/
+├── .env.example
+├── .eslintrc.json
+├── .prettierrc
+└── README.md
+
+---
+
+## DELIVERABLE
+A working live preview URL on Replit showing:
+1. Staff dashboard with mock real-time occupancy data
+2. Attendee mobile view with queue join + wait time
+3. Google Maps heatmap on venue layout
+4. At least one working push notification demo
+
+Make the UI visually polished — dark navy + electric blue theme, card-based layout, smooth loading skeletons.
