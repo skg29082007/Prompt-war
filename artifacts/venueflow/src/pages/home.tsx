@@ -1,14 +1,56 @@
 import { Link } from "wouter";
-import { Shield, Users, Activity, ChevronRight } from "lucide-react";
+import { Shield, Users, Activity, ChevronRight, LogIn, LogOut, Bell } from "lucide-react";
 import { motion } from "framer-motion";
+import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
+import { useNotifications } from "@/hooks/useNotifications";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
+  const { user, loading, signInWithGoogle, signOutUser } = useFirebaseAuth();
+  const { permissionGranted, enable } = useNotifications();
+  const { toast } = useToast();
+
+  const handleEnableNotifications = async () => {
+    const token = await enable();
+    if (token) {
+      toast({ title: "Notifications enabled", description: "You'll receive live venue alerts." });
+    } else {
+      toast({ title: "Notifications blocked", description: "Please allow notifications in your browser.", variant: "destructive" });
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden bg-background">
-      {/* Background decoration */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
-      
-      <motion.div 
+
+      {/* Top auth bar */}
+      <div className="absolute top-6 right-6 flex items-center gap-3 z-20">
+        {!permissionGranted && (
+          <Button variant="outline" size="sm" className="gap-2" onClick={handleEnableNotifications}>
+            <Bell className="w-4 h-4" /> Enable Alerts
+          </Button>
+        )}
+        {loading ? null : user ? (
+          <div className="flex items-center gap-3">
+            <Avatar className="w-8 h-8">
+              <AvatarImage src={user.photoURL ?? undefined} alt={user.displayName ?? "User"} />
+              <AvatarFallback>{user.displayName?.[0] ?? "U"}</AvatarFallback>
+            </Avatar>
+            <span className="text-sm text-muted-foreground hidden md:block">{user.displayName}</span>
+            <Button variant="ghost" size="sm" onClick={signOutUser} className="gap-2">
+              <LogOut className="w-4 h-4" /> Sign out
+            </Button>
+          </div>
+        ) : (
+          <Button variant="outline" size="sm" onClick={signInWithGoogle} className="gap-2">
+            <LogIn className="w-4 h-4" /> Sign in with Google
+          </Button>
+        )}
+      </div>
+
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center z-10 mb-12"
@@ -20,14 +62,18 @@ export default function Home() {
         <p className="text-lg md:text-xl text-muted-foreground max-w-lg mx-auto">
           Real-time physical event experience management system.
         </p>
-        
+        {user && (
+          <p className="mt-3 text-sm text-primary">
+            Welcome back, {user.displayName?.split(" ")[0]}
+          </p>
+        )}
         <div className="mt-8 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/50 border border-border/50 text-sm font-medium">
           <span className="w-2 h-2 rounded-full bg-primary pulse-glow" />
           Live Event: Championship Finals
         </div>
       </motion.div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1 }}

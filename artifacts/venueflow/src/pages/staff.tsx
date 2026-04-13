@@ -3,7 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Activity, AlertTriangle, MessageSquare, Map as MapIcon, BarChart3, Users, AlertCircle, CheckCircle2, Check } from "lucide-react";
+import { Activity, AlertTriangle, MessageSquare, Map as MapIcon, BarChart3, Users, AlertCircle, CheckCircle2, Check, Globe } from "lucide-react";
+import GoogleMapsHeatmap from "@/components/GoogleMapsHeatmap";
 import { 
   useGetZonesSummary, 
   useListZones, 
@@ -252,9 +253,10 @@ export default function Staff() {
         </div>
 
         <Tabs defaultValue="zones" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8 bg-card border border-border p-1 h-12 rounded-xl">
+          <TabsList className="grid w-full grid-cols-4 mb-8 bg-card border border-border p-1 h-12 rounded-xl">
             <TabsTrigger value="zones" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"><MapIcon className="w-4 h-4 mr-2" /> Zone Monitor</TabsTrigger>
-            <TabsTrigger value="alerts" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"><AlertTriangle className="w-4 h-4 mr-2" /> Active Alerts {alerts && alerts.length > 0 && <Badge variant="destructive" className="ml-2 px-1.5 py-0 min-w-5 h-5 flex items-center justify-center">{alerts.length}</Badge>}</TabsTrigger>
+            <TabsTrigger value="gmaps" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"><Globe className="w-4 h-4 mr-2" /> Live Map</TabsTrigger>
+            <TabsTrigger value="alerts" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"><AlertTriangle className="w-4 h-4 mr-2" /> Alerts {alerts && alerts.length > 0 && <Badge variant="destructive" className="ml-2 px-1.5 py-0 min-w-5 h-5 flex items-center justify-center">{alerts.length}</Badge>}</TabsTrigger>
             <TabsTrigger value="chat" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"><MessageSquare className="w-4 h-4 mr-2" /> Comms</TabsTrigger>
           </TabsList>
 
@@ -379,6 +381,32 @@ export default function Staff() {
                 </div>
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="gmaps" className="mt-0">
+            <Card className="border-border shadow-xl overflow-hidden">
+              <CardHeader className="bg-card border-b border-border">
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-primary" /> Google Maps Live Heatmap
+                </CardTitle>
+                <CardDescription>Real-time crowd density overlaid on venue satellite view. Brighter = more congested.</CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                {isLoadingZones ? (
+                  <Skeleton className="w-full h-[520px]" />
+                ) : (
+                  <GoogleMapsHeatmap
+                    className="w-full h-[520px]"
+                    points={(zones ?? []).map((zone) => ({
+                      lat: 34.0136 + (zone.y - 50) * 0.0004,
+                      lng: -118.2878 + (zone.x - 50) * 0.0006,
+                      weight: zone.occupancyPercent / 100,
+                      label: zone.name,
+                    }))}
+                  />
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="alerts" className="mt-0">
