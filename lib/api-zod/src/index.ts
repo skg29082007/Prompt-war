@@ -5,6 +5,14 @@ export {
   JoinQueueParams,
   ListQueueEntriesParams,
   LeaveQueueParams,
-  // add more if needed
+
+  // 🔥 ADD THESE (missing ones)
+  CreateAlertBody,
+  JoinQueueBody,
+  CreateStaffMessageBody,
+  GetZoneParams,
+  UpdateZoneOccupancyParams,
+
 } from "./generated/api";
+
 export * from "./generated/types";
