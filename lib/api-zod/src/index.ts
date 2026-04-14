@@ -1,2 +1,7 @@
-export * from "./generated/api";
+export {
+  CreateAlertBody,
+  CreateStaffMessageBody,
+  JoinQueueBody,
+  UpdateZoneOccupancyBody
+} from "./generated/api";
 export * from "./generated/types";
